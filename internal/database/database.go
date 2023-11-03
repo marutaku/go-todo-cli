@@ -17,10 +17,13 @@ func Connect(sqliteFilePath string) (*sql.DB, error) {
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
+	if err := createTaskTable(db); err != nil {
+		panic(err)
+	}
 	return db, nil
 }
 
-func CreateTaskTable(db *sql.DB) error {
+func createTaskTable(db *sql.DB) error {
 	statement := `
 	CREATE TABLE IF NOT EXISTS tasks (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,13 +36,20 @@ func CreateTaskTable(db *sql.DB) error {
 	return err
 }
 
-func InsertTask(db *sql.DB, title string, deadline time.Time) (*todo.Task, error) {
-	statement := fmt.Sprintf(`
-	INSERT INTO tasks(title, deadline) VALUES (
-		"%s",
-		"%s"
-	)
-	`, title, deadline)
+func InsertTask(db *sql.DB, title string, deadline time.Time, withDeadline bool) (*todo.Task, error) {
+
+	var statement string
+	if withDeadline {
+		statement = fmt.Sprintf(`INSERT INTO tasks(title, deadline) VALUES (
+			"%s",
+			"%s"
+		)`, title, deadline)
+	} else {
+		statement = fmt.Sprintf(`INSERT INTO tasks(title) VALUES (
+			"%s"
+		)`, title)
+	}
+
 	result, err := db.Exec(statement)
 	if err != nil {
 		return nil, err
@@ -52,8 +62,10 @@ func InsertTask(db *sql.DB, title string, deadline time.Time) (*todo.Task, error
 		Id:        taskId,
 		Title:     title,
 		Status:    todo.Todo,
-		Deadline:  deadline,
 		CreatedAt: time.Now(),
+	}
+	if withDeadline {
+		task.Deadline = deadline
 	}
 	return task, nil
 }

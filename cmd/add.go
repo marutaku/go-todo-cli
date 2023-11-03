@@ -15,7 +15,7 @@ type AddCommandOption struct {
 	deadline string
 }
 
-var o = AddCommandOption{}
+var option = AddCommandOption{}
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
@@ -32,13 +32,15 @@ usage:
 			panic(err)
 		}
 		defer database.Close(db)
-
-		if err := database.CreateTaskTable(db); err != nil {
-			panic(err)
+		withDeadline := option.deadline != ""
+		var deadline time.Time
+		if withDeadline {
+			deadline, err = time.Parse("2006-01-02", option.deadline)
+			if err != nil {
+				panic(err)
+			}
 		}
-
-		deadline := time.Date(2023, 10, 15, 12, 0, 0, 0, time.Local)
-		task, err := database.InsertTask(db, "洗濯物を干す", deadline)
+		task, err := database.InsertTask(db, args[0], deadline, withDeadline)
 		if err != nil {
 			panic(err)
 		}
@@ -49,7 +51,7 @@ usage:
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().StringVarP(&o.deadline, "deadline", "d", "", "Task deadline")
+	addCmd.Flags().StringVarP(&option.deadline, "deadline", "d", "", "Task deadline")
 
 	// Here you will define your flags and configuration settings.
 
