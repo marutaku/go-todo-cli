@@ -5,9 +5,9 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/marutaku/todo/internal/database"
+	"github.com/marutaku/todo/internal/todo"
 	"github.com/spf13/cobra"
 )
 
@@ -33,18 +33,11 @@ usage:
 		}
 		defer database.Close(db)
 		withDeadline := option.deadline != ""
-		var deadline time.Time
-		if withDeadline {
-			deadline, err = time.Parse("2006-01-02", option.deadline)
-			if err != nil {
-				panic(err)
-			}
-		}
-		task, err := database.InsertTask(db, args[0], deadline, withDeadline)
+		input := todo.TaskInput{Title: args[0], DeadlineString: option.deadline, WithDeadline: withDeadline}
+		task, err := todo.Create(input, db)
 		if err != nil {
 			panic(err)
 		}
-
 		fmt.Println(task.ToDescriptionString())
 	},
 }
