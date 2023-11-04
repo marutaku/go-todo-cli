@@ -15,7 +15,7 @@ type AddCommandOption struct {
 	deadline string
 }
 
-var option = AddCommandOption{}
+var addCommandOption = AddCommandOption{}
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
@@ -32,9 +32,9 @@ usage:
 			panic(err)
 		}
 		defer database.Close(db)
-		withDeadline := option.deadline != ""
-		input := todo.TaskInput{Title: args[0], DeadlineString: option.deadline, WithDeadline: withDeadline}
-		task, err := todo.Create(input, db)
+		withDeadline := addCommandOption.deadline != ""
+		input := todo.TaskInput{Title: args[0], DeadlineString: addCommandOption.deadline, WithDeadline: withDeadline}
+		task, err := todo.Create(db, input)
 		if err != nil {
 			panic(err)
 		}
@@ -44,5 +44,5 @@ usage:
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().StringVarP(&option.deadline, "deadline", "d", "", "Task deadline")
+	addCmd.Flags().StringVarP(&addCommandOption.deadline, "deadline", "d", "", "Task deadline")
 }

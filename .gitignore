@@ -98,3 +98,4 @@ Temporary Items
 ### Custom ignores 
 *.db
 todo
+!todo/
