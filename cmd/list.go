@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/marutaku/todo/internal/database"
@@ -21,16 +22,12 @@ var listTaskOption = ListTasksOption{}
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List tasks",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `List the tasks that haven't been completed. 
+By adding the '--all' option, you can view all tasks.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := database.Connect("./task.db")
 		if err != nil {
-			panic(err)
+			ExitWithError(errors.New("database not found. make sure your database file is right path"))
 		}
 		defer database.Close(db)
 		tasks, err := todo.ListTasks(db, listTaskOption.showAll)

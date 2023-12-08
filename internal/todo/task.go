@@ -24,13 +24,15 @@ type TaskInput struct {
 func (t Task) ToDescriptionString() string {
 	taskDescription := fmt.Sprintf("id: %d, title: %s, status: %s", t.Id, t.Title, t.Status)
 	if t.Deadline.Valid {
-		fmt.Println(t.Deadline)
 		taskDescription += fmt.Sprintf(", deadline: " + t.Deadline.Time.Format("2006-01-02"))
 	}
 	return taskDescription
 }
 
-func (t *Task) ChangeStatus(status Status, db *sql.DB) (*Task, error) {
+func (t *Task) ChangeStatus(status string, db *sql.DB) (*Task, error) {
+	if !ValidateStatus(status) {
+		return nil, fmt.Errorf("%s is not a valid status. Please input 'Todo', 'InProgress', 'Done'", status)
+	}
 	statement := "UPDATE tasks SET status = $1 WHERE id = $2"
 	_, err := db.Exec(statement, status, t.Id)
 	if err != nil {

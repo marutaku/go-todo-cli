@@ -4,8 +4,8 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/marutaku/todo/internal/database"
@@ -24,13 +24,9 @@ var chsCmd = &cobra.Command{
 			ExitWithError(fmt.Errorf("%s is not a valid taskId", args[0]))
 		}
 		newStatus := args[1]
-		if !todo.ValidateStatus(newStatus) {
-			fmt.Printf("%s is not a valid status. Please input 'Todo', 'InProgress', 'Done'.\n", newStatus)
-			os.Exit(1)
-		}
 		db, err := database.Connect("./task.db")
 		if err != nil {
-			panic(err)
+			ExitWithError(errors.New("database not found. make sure your database file is right path"))
 		}
 		defer database.Close(db)
 		task, err := todo.FindTaskById(db, taskId)

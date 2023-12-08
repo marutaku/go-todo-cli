@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/marutaku/todo/internal/database"
@@ -29,10 +30,13 @@ usage:
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := database.Connect("./task.db")
 		if err != nil {
-			panic(err)
+			ExitWithError(errors.New("database not found. make sure your database file is right path"))
 		}
 		defer database.Close(db)
 		withDeadline := addCommandOption.deadline != ""
+		if len(args) == 0 {
+			ExitWithError(errors.New("input task information"))
+		}
 		input := todo.TaskInput{Title: args[0], DeadlineString: addCommandOption.deadline, WithDeadline: withDeadline}
 		task, err := todo.Create(db, input)
 		if err != nil {
