@@ -28,15 +28,15 @@ The deadline option should input with 'YYYY-MM-DD' format.
 usage: 
 	todo add "some task" --deadline 2023-01-01`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			ExitWithError(errors.New("input task information"))
+		}
 		db, err := database.Connect("./task.db")
 		if err != nil {
 			ExitWithError(errors.New("database not found. make sure your database file is right path"))
 		}
 		defer database.Close(db)
 		withDeadline := addCommandOption.deadline != ""
-		if len(args) == 0 {
-			ExitWithError(errors.New("input task information"))
-		}
 		input := todo.TaskInput{Title: args[0], DeadlineString: addCommandOption.deadline, WithDeadline: withDeadline}
 		task, err := todo.Create(db, input)
 		if err != nil {
