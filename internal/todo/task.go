@@ -7,14 +7,6 @@ import (
 	"time"
 )
 
-type Status = string
-
-const (
-	Todo       = Status("Todo")
-	InProgress = Status("InProgress")
-	Done       = Status("Done")
-)
-
 type Task struct {
 	Id        int64
 	Title     string
@@ -30,17 +22,22 @@ type TaskInput struct {
 }
 
 func (t Task) ToDescriptionString() string {
-	taskDescription := fmt.Sprintf("title: %s, status: %s", t.Title, t.Status)
+	taskDescription := fmt.Sprintf("id: %d, title: %s, status: %s", t.Id, t.Title, t.Status)
 	if t.Deadline.Valid {
 		fmt.Println(t.Deadline)
 		taskDescription += fmt.Sprintf(", deadline: " + t.Deadline.Time.Format("2006-01-02"))
 	}
 	return taskDescription
-
 }
 
-func (t *Task) ChangeStatus(status Status) {
+func (t *Task) ChangeStatus(status Status, db *sql.DB) (*Task, error) {
+	statement := "UPDATE tasks SET status = $1 WHERE id = $2"
+	_, err := db.Exec(statement, status, t.Id)
+	if err != nil {
+		return nil, err
+	}
 	t.Status = status
+	return t, nil
 }
 
 func Create(db *sql.DB, input TaskInput) (*Task, error) {
@@ -100,4 +97,18 @@ func ListTasks(db *sql.DB, showAllTasks bool) ([]Task, error) {
 		tasks = append(tasks, task)
 	}
 	return tasks, nil
+}
+
+func FindTaskById(db *sql.DB, taskId int) (*Task, error) {
+	statement := "SELECT * FROM tasks WHERE id = $1"
+	var task Task
+	err := db.QueryRow(statement, taskId).Scan(&task.Id, &task.Title, &task.Status, &task.Deadline, &task.CreatedAt)
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, fmt.Errorf("taskId %d not found", taskId)
+	case err != nil:
+		return nil, err
+	default:
+		return &task, nil
+	}
 }
