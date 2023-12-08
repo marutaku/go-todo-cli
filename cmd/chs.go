@@ -37,8 +37,11 @@ var chsCmd = &cobra.Command{
 		if err != nil {
 			ExitWithError(err)
 		}
-		task.ChangeStatus(newStatus, db)
-		fmt.Println(task.ToDescriptionString())
+		newTask, err := task.ChangeStatus(newStatus, db)
+		if err != nil {
+			ExitWithError(err)
+		}
+		fmt.Println(newTask.ToDescriptionString())
 	},
 }
 
