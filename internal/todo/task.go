@@ -79,6 +79,22 @@ func Create(db *sql.DB, input TaskInput) (*Task, error) {
 	return task, nil
 }
 
+func Delete(db *sql.DB, taskId int) error {
+	statement := "DELETE FROM tasks WHERE id = $1"
+	result, err := db.Exec(statement, taskId)
+	if err != nil {
+		return err
+	}
+	rowsAffect, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffect == 0 {
+		return fmt.Errorf("task id %d not found", taskId)
+	}
+	return nil
+}
+
 func ListTasks(db *sql.DB, showAllTasks bool) ([]Task, error) {
 	var statement string
 	if showAllTasks {

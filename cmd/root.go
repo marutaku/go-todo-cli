@@ -31,7 +31,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "todo",
 	Short: "CLI tool for manage your tasks",
-	Long:  `Todo management application in command line interface`,
+	Long:  `Todo management application for command line interface`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
